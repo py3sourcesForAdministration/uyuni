@@ -14,13 +14,12 @@ except:
     pass # we are running from pydoc3
 ##### Module Start
 
-
 ################################################################
 def Patches_DeleteManual(*args):
   """      Delete Patches from a Cloned Channel if they have a CM- advisory
   """
   from __main__ import dbg,prgargs,cfg
-#  import sumaconnect
+  #  import sumaconnect
   dbg.entersub()
   dbg.dprint(2,"ARGS",args)
   if len(args):
@@ -45,7 +44,7 @@ def Patches_DeleteManual(*args):
   source_exists = next((True for channel in clist if channel['label'] == chan),False)
   if source_exists:
     srcerrata = ses.channel.software.listErrata(key,chan)
-#    dbg.dprint(256,"List of Errata", srcerrata)
+    #    dbg.dprint(256,"List of Errata", srcerrata)
     for ref in srcerrata:
       print(ref['advisory_name'])
       if ref['advisory_name'].startswith('CM'):
@@ -55,6 +54,7 @@ def Patches_DeleteManual(*args):
     print( "no valid channel: ",channel)
   dbg.leavesub()
   return
+
 ##############################################################################
 ##############################################################################
 def TEST_API(*args):
@@ -64,7 +64,7 @@ def TEST_API(*args):
             errata.getDetails CESA-2019:2029
   """
   from __main__ import dbg,prgargs,data
-#  import sumaconnect
+  #  import sumaconnect
   dbg.entersub()
   dbg.dprint(2,"ARGS",args)
   if len(args) > 0:
@@ -93,7 +93,7 @@ def Actions_Show(*args):
        Input may be floating point number
   """      
   from __main__ import dbg,prgargs,data
-#  import datetime,time,sumaconnect
+  #  import datetime,time,sumaconnect
   dbg.entersub()
   dbg.dprint(2,"ARGS",args)
   ses = data['conn']['ses']
@@ -116,7 +116,7 @@ def Actions_Show(*args):
   tframe = float(days)*24*3600
   currts = time.time()
   startts = currts - tframe
-#    readable = datetime.datetime.fromtimestamp(1569750774).isoformat()
+  #    readable = datetime.datetime.fromtimestamp(1569750774).isoformat()
   readable = time.ctime(startts)
   print("----- Startdate:", readable) 
   actions = sumaconnect.docall('schedule.listAllActions')
@@ -129,10 +129,10 @@ def Actions_Show(*args):
     shortfail    = []
     exects       = datetime.datetime.timestamp(a['earliest'])
     if  exects >= startts: 
-#      dbg.dprint(4,"Current Action",a)
+      #      dbg.dprint(4,"Current Action",a)
       if a['inProgressSystems'] + a['completedSystems'] + a['failedSystems'] == 1 :
         if a['inProgressSystems'] == 1 : 
-#          host = sumaconnect.docall(data['conn'],'schedule.listInProgressSystems',a['id']
+          #          host = sumaconnect.docall(data['conn'],'schedule.listInProgressSystems',a['id']
           host = ses.schedule.listInProgressSystems(key,a['id'])
           dbg.dprint(4,"Actionid:", a['id'], "Host:", host)
           if host[0]['server_name'] :
@@ -171,7 +171,7 @@ def Actions_Archive(*args):
   """       archives actions older than num days.
   """
   from __main__ import dbg,prgargs,data
-#  import datetime,time,sumaconnect
+  #  import datetime,time,sumaconnect
   dbg.entersub()
   dbg.dprint(2,"ARGS",args)
   days = 7
@@ -226,7 +226,7 @@ def Actions_Delete(*args):
   """       deletes archived actions older than num days.
   """
   from __main__ import dbg,prgargs,data
-#  import datetime,time,sumaconnect
+  #  import datetime,time,sumaconnect
   dbg.entersub()
   dbg.dprint(2,"ARGS",args)
   days = 30
@@ -263,14 +263,14 @@ def Actions_Delete(*args):
       continue
     print("added Action", a['id'], a['earliest'])
     archlist.append(a['id'])
-#  try :
-#    for aid in archlist:
-#      dbg.dprint(0,"Aid",aid, "Type", type(aid)) 
-#      sumaconnect.docall('schedule.deleteActions',str(aid))
-#      ret += ses.schedule.deleteActions(key,tuple(aid))
+    #  try :
+    #    for aid in archlist:
+    #      dbg.dprint(0,"Aid",aid, "Type", type(aid)) 
+    #      sumaconnect.docall('schedule.deleteActions',str(aid))
+    #      ret += ses.schedule.deleteActions(key,tuple(aid))
   ret = ses.schedule.deleteActions(key,archlist)
-#  except Error as e: 
-#    print ("no success,e")
+  #  except Error as e: 
+  #    print ("no success,e")
 
 
   if myinput.is_number(ret) and ret == 1 :
@@ -289,14 +289,14 @@ def Systems_ShowPatches(*args):
        without args shows all Patches for all Groups.
   """
   from __main__ import dbg,prgargs,data
-#  import os,uyuni_patches
+  #  import os,uyuni_patches
   dbg.entersub()
   dbg.dprint(2,"ARGS",args)
   #---- Check savefile 
-#  old = uyuni_patches.check_savefile(data['savefile'])
-#  if old :
-#    dbg.dprint(0, "Updating Statefile, please wait")
-#    UpdateStateFile()
+  #  old = uyuni_patches.check_savefile(data['savefile'])
+  #  if old :
+  #    dbg.dprint(0, "Updating Statefile, please wait")
+  #    UpdateStateFile()
   #---- Settings and params
   ses = data['conn']['ses']
   key = data['conn']['key']
@@ -381,6 +381,7 @@ def Systems_ShowPkgs(*args):
   syslist = data['sumastate']['systems']
   patlist = data['sumastate']['patches']
   sysorgroup = {}
+  #print(prgargs.verbose)
   if len(args):
     if "help" in args:
       print(f"Usage: {dbg.myself().__name__} [sysorgroup [sysorgroup] ...]") 
@@ -404,10 +405,18 @@ def Systems_ShowPkgs(*args):
     dbg.dprint(0,f"{system:35}",", ID:",curid)
     try:
       dbg.setlvl(+2)
+      if prgargs.verbose > 0 :
+        dbg.setlvl(+4)
       pkgs = ses.system.listLatestUpgradablePackages(key,curid)
       if len(pkgs):
         for pkg in pkgs:
           dbg.dprint(2,f"{pkg['to_package_id']:8}, {pkg['name']:35} {pkg['from_version']:8}- {pkg['from_release']:8} -> {pkg['to_version']:8}- {pkg['to_release']:8}")
+          pkgnum = pkg['to_package_id']
+          provchannels = []
+          provider = ses.packages.listProvidingChannels(key,pkgnum)
+          for p in provider:
+            provchannels.append(p['label'])
+          dbg.dprint(4,'        ',', '.join(provchannels))
       dbg.setlvl()
     except:
       dbg.dprint(0, "Call listLatestUpgradablePackages did not succeed")
@@ -449,10 +458,10 @@ def Systems_Status(*args):
   else:
     sysorgroup = syslist 
   #----   
-#  old = uyuni_patches.check_savefile(data['savefile'])
-#  if old :
-#    dbg.dprint(0, "Updating Statefile, please wait")
-#    UpdateStateFile()
+  #  old = uyuni_patches.check_savefile(data['savefile'])
+  #  if old :
+  #    dbg.dprint(0, "Updating Statefile, please wait")
+  #    UpdateStateFile()
   print(data['formats']['systemstateheader'])
   for system in sorted(sysorgroup): 
     print(data['formats']['systemstateline'].format( 
@@ -476,7 +485,7 @@ def UpdateStateFile(*args):
        dictionary to dumpfile for later use.
   """
   from __main__ import dbg,prgargs,data
-#  import sys,pickle,uyuni_groups,uyuni_channels,uyuni_patches
+  #  import sys,pickle,uyuni_groups,uyuni_channels,uyuni_patches
   dbg.entersub()
   dbg.dprint(2,"ARGS",args)
   dumpfile = data['savefile']
@@ -519,7 +528,7 @@ def Channel_List(*args):
        without args show all known channels
   """
   from __main__ import dbg,prgargs,data
-#  import uyuni_channels
+  #  import uyuni_channels
   dbg.entersub()
   dbg.dprint(2,"ARGS",args)
   ses = data['conn']['ses']
@@ -582,7 +591,7 @@ def Channel_01_MergeVendor(*args):
     spacecmd softwarechannel_delete itg-sles12-sp2-ltss-updates-x86_64
   """
   from __main__ import dbg,prgargs,data,modlog
-#  import uyuni_channels
+  #  import uyuni_channels
   dbg.entersub()
   dbg.dprint(2,"ARGS",args)
   ses = data['conn']['ses']
@@ -609,7 +618,7 @@ def Channel_01_MergeVendor(*args):
     if "merge" in args:
       cl = False
 
-#  dbg.dprint(256,t,p,cl)
+  #  dbg.dprint(256,t,p,cl)
   modlog.info(f"----> {dbg.myself().__name__}")
   for (source,target,parent) in chmap:
     modlog.info(f"{source} -> {target}")
@@ -680,8 +689,8 @@ def Channel_02_applyExcludes(*args):
   Note: if you confirm the deletion of any pkg the referencing
         erratum will be removed as well without confirmation.
   """
-# Note: If there is a cloned erratum in some other channel, but not in the 
-#            requested one, packages are deleted nevertheless.
+  # Note: If there is a cloned erratum in some other channel, but not in the 
+  #            requested one, packages are deleted nevertheless.
   from __main__ import dbg,prgargs,data,modlog
   import re
   dbg.entersub()
@@ -705,7 +714,7 @@ def Channel_02_applyExcludes(*args):
       return
     elif args[i] == "test":
       test = True
-#      dbg.setlvl(6)
+      # dbg.setlvl(6)
     elif args[i] == "yes":
       confirm = False
       dbg.setlvl(0)
