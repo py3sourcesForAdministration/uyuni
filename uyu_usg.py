@@ -33,8 +33,6 @@ group.add_argument('-e',nargs='+', default=argparse.SUPPRESS,
                         metavar=("mod","opt") , dest="module", 
                         help="module and options execute\n\n")
                       
-
-
 args = parser.parse_args()
 globals()['prgargs']  = args
 dbg._initlvl(prgargs.debug) 

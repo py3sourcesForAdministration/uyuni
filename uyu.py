@@ -72,8 +72,8 @@ def main():
     else:
       dbg.dprint(0,"No such Module: ", prgargs.module[0])
       exit(1)
-  if prgargs.verbose:
-    print("-----     E N D     -----")  
+  #if prgargs.verbose:
+  #  print("-----     E N D     -----")  
   dbg.leavesub()
 
 ###########   D E F A U L T   I N I T   ######################################
