@@ -371,7 +371,7 @@ def Systems_ShowPkgs(*args):
        Argstring can be a blank separated list of Systems and/or groups
        Default: Without args prints all systems of the default dumpfile
   """
-  from __main__ import dbg,prgargs,data
+  from __main__ import dbg,prgargs,data,prgname
   dbg.entersub()
   dbg.dprint(2,"ARGS",args)
   #---- Settings
@@ -384,7 +384,7 @@ def Systems_ShowPkgs(*args):
   #print(prgargs.verbose)
   if len(args):
     if "help" in args:
-      print(f"Usage: {dbg.myself().__name__} [sysorgroup [sysorgroup] ...]") 
+      print(f"Usage: {prgname} -e {dbg.myself().__name__} [sysorgroup [sysorgroup] ...] [-vv] [-x channelfilter [patchfilter]]") 
       print(f"{dbg.myself().__doc__}") 
       dbg.leavesub()
       return
@@ -399,27 +399,76 @@ def Systems_ShowPkgs(*args):
           dbg.dprint(0,sog,"is not a known group or system")
   else:
     sysorgroup = syslist 
-  #----   
+  #----  
+  #dbg.dprint(0,'verbose:',prgargs.verbose, 'xargs',prgargs.xargs, type(prgargs.xargs)) 
+  providers = aDict()
+  channelmatch = ''
+  patchmatch   = ''
+  if len(prgargs.xargs) == 2:
+    channelmatch = prgargs.xargs[0]
+    patchmatch   = prgargs.xargs[1]
+  elif len(prgargs.xargs) == 1: 
+    channelmatch = prgargs.xargs[0]
+  else:
+    pass
+
+  dbg.setlvl(+2)
   for system in sorted(sysorgroup):
     curid = syslist[system]['id']
     dbg.dprint(0,f"{system:35}",", ID:",curid)
+    printout = 1
+    pkgs = []
     try:
-      dbg.setlvl(+2)
-      if prgargs.verbose > 0 :
-        dbg.setlvl(+4)
       pkgs = ses.system.listLatestUpgradablePackages(key,curid)
-      if len(pkgs):
-        for pkg in pkgs:
-          dbg.dprint(2,f"{pkg['to_package_id']:8}, {pkg['name']:35} {pkg['from_version']:8}- {pkg['from_release']:8} -> {pkg['to_version']:8}- {pkg['to_release']:8}")
-          pkgnum = pkg['to_package_id']
-          provchannels = []
-          provider = ses.packages.listProvidingChannels(key,pkgnum)
-          for p in provider:
-            provchannels.append(p['label'])
-          dbg.dprint(4,'        ',', '.join(provchannels))
-      dbg.setlvl()
+      #print(pkgs)
     except:
-      dbg.dprint(0, "Call listLatestUpgradablePackages did not succeed")
+      dbg.dprint(0, "Call listLatestUpgradablePackages did not succeed for system")
+      continue
+    #if len(pkgs):
+    for pkg in pkgs:
+      pblock = [] ; printout = 1
+      pkgnum = pkg['to_package_id']
+      pblock.append(f"{pkgnum:8}, {pkg['name']:35} {pkg['from_version']:8}- {pkg['from_release']:8} -> {pkg['to_version']:8}- {pkg['to_release']:8}")
+      if prgargs.verbose:
+        channlp = []
+        erratap = []
+        cmatch = 0 ; pmatch = 0 ; 
+        if not providers.get(pkgnum):
+          try:
+            channlp = ses.packages.listProvidingChannels(key,pkgnum)
+            erratap = ses.packages.listProvidingErrata(key,pkgnum)
+          except:
+            dbg.dprint(0, "call for providers did not succeed")
+            continue
+          for c in channlp:
+            label = c['label']
+            providers[pkgnum].channels[label] = providers[pkgnum].channels.get(label,1)
+          for e in erratap:
+            advisory = e['advisory'].replace('CL-','',1)
+            providers[pkgnum].errata[advisory] = providers[pkgnum].errata.get(advisory,e['synopsis'])
+        ### end of information aquirement for a new pkg
+        ### Fill block with matching labels and errata     
+        for label in providers[pkgnum].channels.keys():
+          if channelmatch in label:
+            cmatch = 1
+            pblock.append(f"         Channel: {label}")
+        if prgargs.verbose > 1:
+          for adv in providers[pkgnum].errata.keys():
+            if patchmatch in adv:
+              pmatch = 1
+              pblock.append(f"         Errata: {adv} Syn: {providers[pkgnum].errata[adv]}")
+        ### in case of verbose check if this pblock should be printed      
+        if not cmatch:
+          printout = 0 
+        if prgargs.verbose > 1 and len(prgargs.xargs) > 1 and pmatch == 0:
+          printout = 0  
+      ### This is for all pkgs        
+      if printout:
+        #dbg.dprint(2,'-----------------')
+        for line in pblock:   
+          dbg.dprint(2,line)
+
+  dbg.setlvl()
   dbg.leavesub()
   return
       

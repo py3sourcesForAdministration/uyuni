@@ -16,12 +16,15 @@ parser.add_argument('-d', type=int,default=cfg.argdefaults.debug,
                           metavar="debug", dest="debug",        
                         help="set debug level to num\t")
 parser.add_argument('-v', action='count', dest="verbose", 
-                            help="increase verbosity\t\t") 
+                            help="increase verbosity\t") 
 parser.add_argument('-L', action='store_true', dest="log",
                         help="write log file \t\t")
 parser.add_argument('-c', type=str,default="SRV-default",metavar="Config",
                             dest="config",       
                             help="configuration to use\t")                        
+parser.add_argument('-x', nargs='+',metavar="xargs",default=[],
+                            dest="xargs",       
+                            help="filter args for module\t")                        
 req = parser.add_argument_group('required')
 group = req.add_mutually_exclusive_group(required=True)
 group.add_argument('-l',action='store_true', dest="listmod",default=argparse.SUPPRESS,
