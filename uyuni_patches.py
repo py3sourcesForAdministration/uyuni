@@ -10,7 +10,7 @@ try:
 except:
   if sys.argv[0].find('pydoc'):
     pass # we are running from pydoc3
-##############################################################################
+
 ##############################################################################
 def get_Patches_for_all_Systems(ses,key,syslist,patlist):
   """ Get all Patchinfo for the Systems in syslist, fillup syslist, create a new dict
@@ -71,24 +71,22 @@ def get_Patches_for_all_Systems(ses,key,syslist,patlist):
   return(syslist,patlist)
 
 ##############################################################################
-##############################################################################
 def create_savefile(savefile):
   """ Create a new statefile if it does not yet exist
   """
   from __main__ import dbg,data
-#  import mysumacalls
+  #import mysumacalls
   dbg.entersub()
   mysumacalls.UpdateStateFile(savefile)
   dbg.leavesub()
 
-##############################################################################
 ##############################################################################
 def check_savefile(savefile):
   """ checks for the age of statefile. If file is younger than data['maxage'] returns 0,
       else returns the differnce (older than data['maxage']) in seconds.
   """
   from __main__ import prgname,dbg,data
-#  import time,os,datetime
+  #import time,os,datetime
   dbg.entersub()
   overdue = 0
   if not os.path.exists(savefile):
@@ -98,33 +96,31 @@ def check_savefile(savefile):
   max_s = (data['maxage'] * 60)
   if ( f_age > max_s ):
     overdue = f_age
-#    f_age = str(datetime.timedelta(seconds=f_age))
-#    dbg.dprint(0, "SystemState is",f_age,"old, Information may be outdated")
+    #f_age = str(datetime.timedelta(seconds=f_age))
+    #dbg.dprint(0, "SystemState is",f_age,"old, Information may be outdated")
   dbg.leavesub()  
   return(overdue)
 
-##############################################################################
 ##############################################################################
 def read_savefile(savefile):
   """ Read the statefile, overwrite data['sumastate']  
   """
   from __main__ import prgname,dbg,data
-#  import time,os,pickle
+  #import time,os,pickle
   dbg.entersub()
   with open(savefile,'rb') as f:
     data['sumastate'] = pickle.load(f)
 
-  dbg.dprintref(4,data['sumastate'],"data.sumastate")
+  dbg.dprint(4,"Start data.sumastate", data['sumastate'], "End data.sumastate")
   dbg.leavesub()  
   return()
 
-##############################################################################
 ##############################################################################
 def write_savefile(savefile):
   """ write data['sumastate'] to savefile 
   """
   from __main__ import prgname,dbg,data
-#  import time,os,pickle
+  #import time,os,pickle
   dbg.entersub()
   with open(savefile,'wb') as f:
     dbg.dprint(2,"Creating fresh Systemstate in",savefile)
@@ -133,7 +129,6 @@ def write_savefile(savefile):
   dbg.leavesub()  
   return()
 
-##############################################################################
 ##############################################################################
 def get_patch_difference(source,target,verbose=0):
   """  check errata of source and target channel for differences and print
@@ -155,42 +150,41 @@ def get_patch_difference(source,target,verbose=0):
     srcnames = set(d['advisory_name'].replace('CL-','',1) for d in srcerrata)
     tgtnames = set(d['advisory_name'].replace('CL-','',1) for d in tgterrata)
     srconly  = sorted(list(srcnames.difference(tgtnames)))
-#    dbg.dprint(256,'srconly',sorted(srconly))
-#    srconly  = sorted(srconly)
-#    dbg.dprint(256,type(srconly))
-#    return
-#    dbg.dprintref(0,srconly, "Missing Errata in target")
+    #dbg.dprint(256,'srconly',sorted(srconly))
+    #srconly  = sorted(srconly)
+    #dbg.dprint(256,type(srconly))
+    #return
+    #dbg.dprint(0,"Start Missing Errata in target",srconly, "End Missing Errata in target")
     dbg.setlvl(verbose)
     chunknum = 0
     chunk = []
     for errnum in range(0,len(srconly)):
-#      if errnum // 10 == chunknum:
-#        chunk.append(srconly[errnum])
-#      else :
-#        dbg.dprint(0, "chunk", chunk)
-#        chunk = []
-#        chunknum += 1
-#        chunk.append(srconly[errnum])
-#      
+      #if errnum // 10 == chunknum:
+        #chunk.append(srconly[errnum])
+      #else :
+        #dbg.dprint(0, "chunk", chunk)
+        #chunk = []
+        #chunknum += 1
+        #chunk.append(srconly[errnum])
       err = srconly[errnum]
       errdetail = ses.errata.getDetails(key,err)
       errpkgs   = ses.errata.listPackages(key,err)
-#      print( "----- {} --- id: {:7d} {}".format(
-#              err,errdetail['id'],errdetail['last_modified_date']))
+      #print( "----- {} --- id: {:7d} {}".format(
+              #err,errdetail['id'],errdetail['last_modified_date']))
       dbg.dprint(0, f"{err:33s}   id:{errdetail['id']:7d}")
       dbg.dprint(1, f"  Type:                     {errdetail['type']}")
       dbg.dprint(1, f"  Synopsis:                 {errdetail['synopsis']}")
       dbg.dprint(1, f"  Date:                     {errdetail['last_modified_date']}")  
-#      print( "  Topic:    {}".format(errdetail['topic']))
+      #print( "  Topic:    {}".format(errdetail['topic']))
       dbg.dprint(2, f"  -- Packages affected")  
       for pkgnum in range(0,len(errpkgs)): 
         pkg = errpkgs[pkgnum]
         pkgstring = "".join( [ f"     Id:{pkg['id']:6d}, ", f"N: {pkg['name']:30}, ",
-#          f"V: {pkg['version']:7}, ", f"R: {pkg['release']:7}, ", f"File:{pkg['file']}" ])
+          #f"V: {pkg['version']:7}, ", f"R: {pkg['release']:7}, ", f"File:{pkg['file']}" ])
           f"V: {pkg['version']:7}, ", f"R: {pkg['release']:7}" ])
         dbg.dprint(2,pkgstring)    
-#      dbg.dprintref(0, errpkgs, "Packages affected")  
-#    dbg.dprint(0, "chunk", chunk)
+      #dbg.dprint(0, "Start Packages affected",errpkgs, "End Packages affected")  
+    #dbg.dprint(0, "chunk", chunk)
 
   dbg.setlvl()
   dbg.leavesub()

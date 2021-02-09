@@ -11,7 +11,7 @@ try:
 except:
   if sys.argv[0].find('pydoc'):
     pass # we are running from pydoc3
-##############################################################################
+
 ##############################################################################
 def login(conndict):
   """ Login with username and pass, do not strictly enforce cert verification
@@ -64,7 +64,7 @@ def docall(name,*args):
     ### Call the xmlrpc function on server  
     answer = call(key,*newargs[0:])     
   ### print answer and return
-  dbg.dprintref(2,answer, "answer for "+name)
+  dbg.dprint(2,'Start answer for '+name,answer,"End answer for"+name )
   dbg.leavesub()
   return(answer)
 

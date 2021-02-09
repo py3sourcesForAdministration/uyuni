@@ -327,7 +327,7 @@ def Systems_ShowPatches(*args):
   else:
     sysorgroup = grplist
   
-  dbg.dprintr(2,sysorgroup, name="Resulting Group")
+  dbg.dprint(2,"Resulting Group",sysorgroup, "End Resulting Group")
   if len(sysorgroup) < 1:
     dbg.dprint(0,"No Group recognized from input")
     dbg.leavesub()
@@ -653,8 +653,7 @@ def Channel_01_MergeVendor(*args):
     if "help" in args:
       print(f"Usage: {dbg.myself().__name__} [test] [verbose] [merge]") 
       print(f"{dbg.myself().__doc__}") 
-      print("  current config:")
-      dbg.dprintr(0,data['chmap']['01_vendorclone'],name="data['chmap']['01_vendorclone']")
+      dbg.dprint(192,"current config from data.chmap.01_vendorclone",data['chmap']['01_vendorclone'],"End data['chmap']['01_vendorclone']")
       print("")
       dbg.leavesub()
       return
@@ -701,8 +700,7 @@ def Channel_02_UpdateArchive(*args):
     if "help" in args:
       print(f"Usage: {dbg.myself().__name__} [test] [verbose]") 
       print(f"{dbg.myself().__doc__}") 
-      print("  current config:")
-      dbg.dprintr(0,chmap,name="data['chmap']['02_datefreeze']")
+      dbg.dprint(192,"current config from data.chmap.02_datefreeze",chmap,"End data['chmap']['02_datefreeze']")
       print("")
       dbg.leavesub()
       return
@@ -735,7 +733,7 @@ def Channel_02_applyExcludes(*args):
        erratum.
 
   Note: if you confirm the deletion of any pkg the referencing
-        erratum will be removed as well without confirmation.
+        erratum will be removed as well without further confirmation.
   """
   # Note: If there is a cloned erratum in some other channel, but not in the 
   #            requested one, packages are deleted nevertheless.
@@ -756,8 +754,7 @@ def Channel_02_applyExcludes(*args):
     if args[i] == "help":
       print(f"Usage: {dbg.myself().__name__} [ test | yes ]") 
       print(f"{dbg.myself().__doc__}") 
-      print("  current config:")
-      dbg.dprintr(0,data['contentexcludes'],name="data['contentexcludes']")
+      dbg.dprint(192,"current config from data.contentexcludes",data['contentexcludes'],"End data['contentexcludes']")
       dbg.leavesub()
       return
     elif args[i] == "test":
@@ -785,7 +782,7 @@ def Channel_02_applyExcludes(*args):
         regexes[name]['version']  = version 
       names.append(rstring)
     channelregex  = re.compile('|'.join(names))
-      #    dbg.dprintref(0,regex,"regex" )
+      #    dbg.dprint(0,"Start regex", regex,"End regex" )
     dbg.dprint(2,"-----" ,channel)
     pkgs = ses.channel.software.listAllPackages(key,channel)
     for pkg in pkgs:
@@ -869,12 +866,12 @@ def Channel_02_applyExcludes(*args):
       pkgs_to_remove = list(fpkgs)
     
     if test:
-      dbg.dprintr(0, pats_to_remove, name="pats_to_remove")
-      dbg.dprintr(0, pkgs_to_remove, name="pkgs_to_remove")
+      dbg.dprint(0,'pats_to_remove', pats_to_remove, "End pats_to_remove")
+      dbg.dprint(0,'pkgs_to_remove', pkgs_to_remove, "pkgs_to_remove")
     else:  
       ### Remove patches and packages in the to_remove lists 
       if len(pats_to_remove):
-        dbg.dprintr(2, pats_to_remove, name="pats_to_remove")
+        dbg.dprint(2, "pats_to_remove",pats_to_remove, "End pats_to_remove")
         try:
           result = ses.channel.software.removeErrata(key,channel,pats_to_remove,False)
           modlog.info(f"Errata removed  : {len(pats_to_remove)}")
@@ -882,7 +879,7 @@ def Channel_02_applyExcludes(*args):
           dbg.dprint(256, "Removing" , pats_to_remove, "failed") 
           modlog.error(f"Removing {pats_to_remove} failed")
       if len(pkgs_to_remove):
-        dbg.dprintr(2, pkgs_to_remove, name="pkgs_to_remove")
+        dbg.dprint(2,"pkgs_to_remove", pkgs_to_remove, "pkgs_to_remove")
         try:
           result = ses.channel.software.removePackages(key,channel,pkgs_to_remove)
           modlog.info(f"Packages removed: {len(pkgs_to_remove)}")
@@ -986,7 +983,7 @@ def Channel_ShowPatchDiff(*args):
        first param <source>. To be able to compare original and cloned 
        channels the leading CL- is cut off in both channels.
   """
-  from __main__ import dbg,prgargs,data
+  from __main__ import dbg,prgargs,data,prgname
   dbg.entersub()
   dbg.dprint(2,"ARGS",args)
   ses = data['conn']['ses']
@@ -996,19 +993,20 @@ def Channel_ShowPatchDiff(*args):
   rest = []
   for i in range(0,len(args)):
     if args[i] == "help":
-      print(f"Usage: {dbg.myself().__name__} <SourceChannel> <TargetChannel> [v[v]]") 
+      print(f"Usage: {prgname} -e {dbg.myself().__name__} <SourceChannel> <TargetChannel> [-v[v]]") 
       print(f"{dbg.myself().__doc__}") 
       dbg.leavesub()
       return
-    elif args[i] == "v":
-      verb = 1
-    elif args[i] == "vv":
-      verb = 3
     else:
       if re.match('\w+',args[i]):
         if (len(rest) <=2):
           rest.append(args[i])
-  
+
+  if prgargs.verbose == 2:
+    verb = 3
+  if prgargs.verbose == 1:
+    verb = 1
+
   if len(rest) == 2:
     source, target = rest
     print(f"Source: {source}")

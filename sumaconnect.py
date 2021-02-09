@@ -67,7 +67,7 @@ def docall(name,*args):
     ### Call the xmlrpc function on server  
     answer = call(key,*newargs[0:])     
   ### print answer and return
-  dbg.dprintref(2,answer, "answer for "+name)
+  dbg.dprint(2,"answer for "+name, answer,"End answer")
   dbg.leavesub()
   return(answer)
 

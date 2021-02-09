@@ -10,7 +10,7 @@ try:
 except:
   if sys.argv[0].find('pydoc'):
     pass # we are running from pydoc3 
-##############################################################################
+
 ##############################################################################
 def Get_Channel_List(ses,key,*args):
   """ Creates a dictionary of all manageable channels found on the uyuni server
@@ -52,7 +52,6 @@ def Get_Channel_List(ses,key,*args):
   return(chnlist)
 
 ##############################################################################
-##############################################################################
 def Merge_Channel(source,target,parent,test=False,verbose=False,clone=False):
   """ Merge content and errata from source channel to target channel. All 
       channel parameters are label strings. parent is the label of target's parent.
@@ -62,7 +61,7 @@ def Merge_Channel(source,target,parent,test=False,verbose=False,clone=False):
   from __main__ import dbg,prgargs,data,modlog
   dbg.entersub()
   dbg.dprint(2,"verbose :",verbose,", test :", test,",clone :",clone)
-#  dbg.dprint(256,dbg.myname())
+  #dbg.dprint(256,dbg.myname())
   ses = data['conn']['ses']
   key = data['conn']['key']
   if verbose:
@@ -70,7 +69,7 @@ def Merge_Channel(source,target,parent,test=False,verbose=False,clone=False):
   ##### Falls test angegeben wurde nur die Aktionen ausgeben
   if test:
     dbg.setlvl(+1)
-#    dbg.dprint(1,"Would merge",source, "to", target)
+    #dbg.dprint(1,"Would merge",source, "to", target)
   ##### Check if channels exist
   clist = ses.channel.listSoftwareChannels(key)
   source_exists = next((True for channel in clist if channel['label'] == source),False)
@@ -120,7 +119,7 @@ def Merge_Channel(source,target,parent,test=False,verbose=False,clone=False):
             try:
               resultCE = ses.errata.clone(key,target,chunk)
               dbg.dprint(1, "Errata chunk ",chunknum, "cloned   :", len(resultCE))
-#              modlog.info(f"Errata chunk {chunknum} cloned   : {len(resultCE)}")
+              #modlog.info(f"Errata chunk {chunknum} cloned   : {len(resultCE)}")
             except: 
               dbg.dprint(256, "Errata chunk ",chunknum, "could not be cloned")
               modlog.error(f"Errata chunk {chunknum} could not be cloned") 
@@ -234,17 +233,14 @@ def Merge_Channel(source,target,parent,test=False,verbose=False,clone=False):
         except: 
           dbg.dprint(256,"Could not create Channel",target)
           modlog.error(f"Could not create Channel {target}")
-
-          
       
   ##### Cleanup and return status
   dbg.dprint(1,"----------- Status: ",clone_stat, " --------------------")
-#  modlog.info(f"--- Status: {clone_stat}")
+  #modlog.info(f"--- Status: {clone_stat}")
   dbg.setlvl()
   dbg.leavesub()
   return clone_stat
 
-##############################################################################
 ##############################################################################
 def get_pkg_difference(source,target,verbose=0):
   """ Get package difference between two software channels.
@@ -272,91 +268,81 @@ def get_pkg_difference(source,target,verbose=0):
       dbg.dprint(1, f"  V: {pkgdict['version']:15}, R: {pkgdict['release']:10}, E: {pkgdict['epoch']}") 
       dbg.dprint(3, f"  Description: {pkgdict['description']}") 
 
-#    dbg.dprintr(0,srconly, name="Missing pkgs in target")
-  
   dbg.setlvl()
   dbg.leavesub()
   return
-##############################################################################
-##############################################################################
-
-
-
 
 ######### Maybe no longer needed after this line ?
-
-
-
-
-##############################################################################
-##############################################################################
-#def Clone_Channel(source,target,parent,**kwargs):
-#  """ Create a new Channel with all content and errata from source channel to target 
-#      channel. All parameters are label strings. parent is the label of target's parent.
-#      Only recognized keyword is checksum.
-#      Returns 0 on failure else 1
-#  """    
-#  from __main__ import dbg,prgargs,data
-#  import sys
-#  dbg.entersub()
-#  dbg.dprintref(2,kwargs,"optional kwargs")
-#  ses = data['conn']['ses']
-#  key = data['conn']['key']
-#  checksum = 'sha256'
-#  if 'checksum' in kwargs:
-#    checksum = kwargs['checksum']
-#  details = { 
-#    'name'         : target,
-#    'label'        : target,
-#    'summary'      : "Clone of "+source,
-#    'parent_label' : parent,
-#    'checksum'     : checksum,
-#  }
-#  try: 
-#    ok = ses.channel.software.clone(key,source,details,False) 
-#  except:
-#    dbg.dprint(0,"Could not clone channel", source, "to",target)
-#    dbg.dprint(0,"error exit: \"{0}\" in {1}".format(sys.exc_info()[1],sys.exc_info()[2:] ))
-#    dbg.dprint(0,"Could not clone Channel",target,"with Error:",xmlrpc.exc_info()[0])
-#    dbg.leavesub()
-#    return(0)
-#  else:
-#    dbg.leavesub()
-#    return(1)
-#
-##############################################################################
-##############################################################################
-#def Create_Channel(source,target,parent,*args):
-#  """ Create a new empty Channel. Only useful for custom channels without errata. All 
-#      parameters are label strings.
-#      Returns 0 on failure else 1
-#  """    
-#  from __main__ import dbg,prgargs,data
-#  import sys
-#  dbg.entersub()
-#  dbg.dprint(2,args)
-#  ses = data['conn']['ses']
-#  key = data['conn']['key']
-#  archLabel   = 'channel-' + target.split('-')[-1]
-#  if source == '' and parent == '':
-#    description = "custom parent channel"
-#  else:
-#    description = "Created from "+source
-#  try:
-#    ses.channel.software.create(key,target,target,description,archLabel,parent)
-#  except:  
-#    if "already in use" in sys.exc_info()[2:]:
-#      dbg.leavesub()
-#      return(1)
-#    else:
-#      dbg.dprint(0,"Could not create channel", target)
-#      dbg.dprint(0,"error exit: \"{0}\" in {1}".format(sys.exc_info()[1],sys.exc_info()[2:] ))
-#      dbg.dprint(0,"Could not create Channel",target,"with Error:",sys.exc_info()[0])
-#      dbg.leavesub()
-#      return(0)
-#  else:  
-#    dbg.dprint(0,"Created channel", target)  
-#
-#  dbg.leavesub()
-#  return(1)
-#    
+  ##############################################################################
+  ##############################################################################
+  #def Clone_Channel(source,target,parent,**kwargs):
+  #  """ Create a new Channel with all content and errata from source channel to target 
+  #      channel. All parameters are label strings. parent is the label of target's parent.
+  #      Only recognized keyword is checksum.
+  #      Returns 0 on failure else 1
+  #  """    
+  #  from __main__ import dbg,prgargs,data
+  #  import sys
+  #  dbg.entersub()
+  #  dbg.dprint(2,"Start kwargs",kwargs,"End optional kwargs")
+  #  ses = data['conn']['ses']
+  #  key = data['conn']['key']
+  #  checksum = 'sha256'
+  #  if 'checksum' in kwargs:
+  #    checksum = kwargs['checksum']
+  #  details = { 
+  #    'name'         : target,
+  #    'label'        : target,
+  #    'summary'      : "Clone of "+source,
+  #    'parent_label' : parent,
+  #    'checksum'     : checksum,
+  #  }
+  #  try: 
+  #    ok = ses.channel.software.clone(key,source,details,False) 
+  #  except:
+  #    dbg.dprint(0,"Could not clone channel", source, "to",target)
+  #    dbg.dprint(0,"error exit: \"{0}\" in {1}".format(sys.exc_info()[1],sys.exc_info()[2:] ))
+  #    dbg.dprint(0,"Could not clone Channel",target,"with Error:",xmlrpc.exc_info()[0])
+  #    dbg.leavesub()
+  #    return(0)
+  #  else:
+  #    dbg.leavesub()
+  #    return(1)
+  #
+  ##############################################################################
+  ##############################################################################
+  #def Create_Channel(source,target,parent,*args):
+  #  """ Create a new empty Channel. Only useful for custom channels without errata. All 
+  #      parameters are label strings.
+  #      Returns 0 on failure else 1
+  #  """    
+  #  from __main__ import dbg,prgargs,data
+  #  import sys
+  #  dbg.entersub()
+  #  dbg.dprint(2,args)
+  #  ses = data['conn']['ses']
+  #  key = data['conn']['key']
+  #  archLabel   = 'channel-' + target.split('-')[-1]
+  #  if source == '' and parent == '':
+  #    description = "custom parent channel"
+  #  else:
+  #    description = "Created from "+source
+  #  try:
+  #    ses.channel.software.create(key,target,target,description,archLabel,parent)
+  #  except:  
+  #    if "already in use" in sys.exc_info()[2:]:
+  #      dbg.leavesub()
+  #      return(1)
+  #    else:
+  #      dbg.dprint(0,"Could not create channel", target)
+  #      dbg.dprint(0,"error exit: \"{0}\" in {1}".format(sys.exc_info()[1],sys.exc_info()[2:] ))
+  #      dbg.dprint(0,"Could not create Channel",target,"with Error:",sys.exc_info()[0])
+  #      dbg.leavesub()
+  #      return(0)
+  #  else:  
+  #    dbg.dprint(0,"Created channel", target)  
+  #
+  #  dbg.leavesub()
+  #  return(1)
+  #    
+  

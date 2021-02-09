@@ -35,5 +35,5 @@ group.add_argument('-e',nargs='+', default=argparse.SUPPRESS,
                       
 args = parser.parse_args()
 globals()['prgargs']  = args
-dbg._initlvl(prgargs.debug) 
+dbg._initlvl(prgargs.debug,verbose=prgargs.verbose) 
 dbg.dprint(2, "prgargs" , prgargs)
