@@ -52,24 +52,22 @@ def Get_Channel_List(ses,key,*args):
   return(chnlist)
 
 ##############################################################################
-def Merge_Channel(source,target,parent,test=False,verbose=False,clone=False):
+def Merge_Channel(source,target,parent,test=False,clone=False):
   """ Merge content and errata from source channel to target channel. All 
       channel parameters are label strings. parent is the label of target's parent.
-      In addition the kwargs verbose, test and clone are accepted with boolean values.
+      In addition the kwargs test and clone are accepted with boolean values.
       Returns 0 on failure, in case of test or success returns 1
   """    
   from __main__ import dbg,prgargs,data,modlog
   dbg.entersub()
-  dbg.dprint(2,"verbose :",verbose,", test :", test,",clone :",clone)
+  dbg.dprint(2,"verbose :",dbg.setlvl(),", test :", test,",clone :",clone)
   #dbg.dprint(256,dbg.myname())
   ses = data['conn']['ses']
   key = data['conn']['key']
-  if verbose:
-    dbg.setlvl(7)
   ##### Falls test angegeben wurde nur die Aktionen ausgeben
   if test:
-    dbg.setlvl(+1)
-    #dbg.dprint(1,"Would merge",source, "to", target)
+    dbg.setlvl(64)
+    #dbg.dprint\(64,"Would merge",source, "to", target)
   ##### Check if channels exist
   clist = ses.channel.listSoftwareChannels(key)
   source_exists = next((True for channel in clist if channel['label'] == source),False)
@@ -85,12 +83,12 @@ def Merge_Channel(source,target,parent,test=False,verbose=False,clone=False):
   ##### If clone is set, clone channel completely if channel does not yet exist, 
   ##### otherwise merge packages, but clone errata
   if clone :
-    dbg.dprint(1,"Clone:",clone, "   ",source, "->", target)
+    dbg.dprint(64,"Clone:",clone, "   ",source, "->", target)
     ##### Clone is set, but channel already exists 
     if target_exists:
-      dbg.dprint(1,"Channel exists, clone pkgs + errata")
+      dbg.dprint(64,"Channel exists, clone pkgs + errata")
       if test :
-        dbg.dprint(1,"  - OK - Would merge packages and clone errata...")
+        dbg.dprint(64,"  - OK - Would merge packages and clone errata...")
         clone_stat = 1
       else:  
         ### get the missing errata 
@@ -99,11 +97,11 @@ def Merge_Channel(source,target,parent,test=False,verbose=False,clone=False):
         srcnames = set(d['advisory_name'] for d in srcerrata)
         tgtnames = set(d['advisory_name'].replace('CL-','',1) for d in tgterrata)
         srconly  = sorted(list(srcnames.difference(tgtnames))) 
-        dbg.dprint(1,"Missing Errata:",srconly)
+        dbg.dprint(64,"Missing Errata:",srconly)
         failure = 0
         try:
           resultMP = ses.channel.software.mergePackages(key,source,target)
-          dbg.dprint(1, "Packages merged :", len(resultMP))
+          dbg.dprint(64, "Packages merged :", len(resultMP))
           modlog.info(f"Packages merged : {len(resultMP)}")
         except:
           dbg.dprint(256,"Merging Packages did not succeed")
@@ -118,7 +116,7 @@ def Merge_Channel(source,target,parent,test=False,verbose=False,clone=False):
           else :  
             try:
               resultCE = ses.errata.clone(key,target,chunk)
-              dbg.dprint(1, "Errata chunk ",chunknum, "cloned   :", len(resultCE))
+              dbg.dprint(64, "Errata chunk ",chunknum, "cloned   :", len(resultCE))
               #modlog.info(f"Errata chunk {chunknum} cloned   : {len(resultCE)}")
             except: 
               dbg.dprint(256, "Errata chunk ",chunknum, "could not be cloned")
@@ -132,7 +130,7 @@ def Merge_Channel(source,target,parent,test=False,verbose=False,clone=False):
         if len(chunk):
           try:
             resultCE = ses.errata.clone(key,target,chunk)
-            dbg.dprint(1, "Errata chunk ",chunknum, "cloned   :", len(resultCE))
+            dbg.dprint(64, "Errata chunk ",chunknum, "cloned   :", len(resultCE))
             modlog.info(f"Errata chunk {chunknum} cloned   : {len(resultCE)}")
           except: 
             dbg.dprint(256, "Errata chunk ",chunknum, "could not be cloned")
@@ -145,7 +143,7 @@ def Merge_Channel(source,target,parent,test=False,verbose=False,clone=False):
           clone_stat = 0
         else:
           result = f"Errata cloned   : {len(srconly)}" 
-          dbg.dprint(1,result)
+          dbg.dprint(64,result)
           modlog.info(f"{result}")
           clone_stat = 1
           
@@ -162,7 +160,7 @@ def Merge_Channel(source,target,parent,test=False,verbose=False,clone=False):
           parch       = srcdetails['arch_label']
           try:
             result = ses.channel.software.create(key,parent,parent,psumm,parch,"")
-            dbg.dprint(1,"Parent Channel", parent, "created",result)
+            dbg.dprint(64,"Parent Channel", parent, "created",result)
             modlog.info(f"Parent Channel {parent} created")
           except:
             err = "error exit: \"{0}\" in {1}".format(sys.exc_info()[1],sys.exc_info()[2:])
@@ -182,7 +180,7 @@ def Merge_Channel(source,target,parent,test=False,verbose=False,clone=False):
       }  
       try:
         result = ses.channel.software.clone(key,source,details,False)
-        dbg.dprint(1,"Channel geclont mit der ID ",result)
+        dbg.dprint(64,"Channel geclont mit der ID ",result)
         modlog.info(f"Channel geclont mit der ID {result}")
         clone_stat = 1
       except: 
@@ -193,19 +191,19 @@ def Merge_Channel(source,target,parent,test=False,verbose=False,clone=False):
 
   ##### Clone ist nicht gesetzt => nur mergen
   else:
-    dbg.dprint(1,"Merge:",source,"->", target)
+    dbg.dprint(64,"Merge:",source,"->", target)
     if target_exists:
-      dbg.dprint(1,"Channels ok, merge pkgs + errata:" )
+      dbg.dprint(64,"Channels ok, merge pkgs + errata:" )
       if test:
-        dbg.dprint(1,"  - OK - Would merge packages and errata...")
+        dbg.dprint(64,"  - OK - Would merge packages and errata...")
         clone_stat = 1
       else:
         try: 
           resultMP = ses.channel.software.mergePackages(key,source,target)
-          dbg.dprint(1, "Packages merged :", len(resultMP))
+          dbg.dprint(64, "Packages merged :", len(resultMP))
           modlog.info(f"Packages merged : {len(resultMP)}")
           resultME = ses.channel.software.mergeErrata(key,source,target) 
-          dbg.dprint(1, "Errata merged   :", len(resultME))
+          dbg.dprint(64, "Errata merged   :", len(resultME))
           modlog.info(f"Errata merged   : {len(resultME)}")
           clone_stat = 1
         except:
@@ -219,7 +217,7 @@ def Merge_Channel(source,target,parent,test=False,verbose=False,clone=False):
       dbg.dprint(0,"Cannot merge",source,"to non existing",target)
       modlog.error(f"Cannot merge {source} to non existing {target}")
       if test:
-        dbg.dprint(1,"Would try to create new channel",target)
+        dbg.dprint(64,"Would try to create new channel",target)
         clone_stat = 1
       else:
         dbg.dprint(0,"Trying to create new channel:",target)  
@@ -235,14 +233,14 @@ def Merge_Channel(source,target,parent,test=False,verbose=False,clone=False):
           modlog.error(f"Could not create Channel {target}")
       
   ##### Cleanup and return status
-  dbg.dprint(1,"----------- Status: ",clone_stat, " --------------------")
+  dbg.dprint(64,"----------- Status: ",clone_stat, " --------------------")
   #modlog.info(f"--- Status: {clone_stat}")
   dbg.setlvl()
   dbg.leavesub()
   return clone_stat
 
 ##############################################################################
-def get_pkg_difference(source,target,verbose=0):
+def get_pkg_difference(source,target):
   """ Get package difference between two software channels.
   """
   from __main__ import dbg,prgargs,data
@@ -260,15 +258,13 @@ def get_pkg_difference(source,target,verbose=0):
     tgtids = set(d['id'] for d in tgtlist)
     srconly  = list(srcids.difference(tgtids))
     tgtonly  = list(tgtids.difference(srcids))
-    dbg.setlvl(verbose)
     for pkgnum in range(0,len(srconly)):
       pkgid = srconly[pkgnum]
       pkgdict = ses.packages.getDetails(key,pkgid)
       dbg.dprint(0, f"{pkgdict['name']:55} {pkgid:7d}")
-      dbg.dprint(1, f"  V: {pkgdict['version']:15}, R: {pkgdict['release']:10}, E: {pkgdict['epoch']}") 
-      dbg.dprint(3, f"  Description: {pkgdict['description']}") 
+      dbg.dprint(64, f"  V: {pkgdict['version']:15}, R: {pkgdict['release']:10}, E: {pkgdict['epoch']}") 
+      dbg.dprint(128, f"  Description: {pkgdict['description']}") 
 
-  dbg.setlvl()
   dbg.leavesub()
   return
 

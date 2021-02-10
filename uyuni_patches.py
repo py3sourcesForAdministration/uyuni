@@ -130,13 +130,14 @@ def write_savefile(savefile):
   return()
 
 ##############################################################################
-def get_patch_difference(source,target,verbose=0):
+def get_patch_difference(source,target):
   """  check errata of source and target channel for differences and print
   the errata names. To prevent problems with clone names, target should be 
   the cloned channel.
   """  
   from __main__ import dbg,prgargs,data
   dbg.entersub()
+  #print("LEVEL",dbg.setlvl())
   ses = data['conn']['ses']
   key = data['conn']['key']  
   typenames = data['patchtypenames']
@@ -155,7 +156,6 @@ def get_patch_difference(source,target,verbose=0):
     #dbg.dprint(256,type(srconly))
     #return
     #dbg.dprint(0,"Start Missing Errata in target",srconly, "End Missing Errata in target")
-    dbg.setlvl(verbose)
     chunknum = 0
     chunk = []
     for errnum in range(0,len(srconly)):
@@ -172,21 +172,20 @@ def get_patch_difference(source,target,verbose=0):
       #print( "----- {} --- id: {:7d} {}".format(
               #err,errdetail['id'],errdetail['last_modified_date']))
       dbg.dprint(0, f"{err:33s}   id:{errdetail['id']:7d}")
-      dbg.dprint(1, f"  Type:                     {errdetail['type']}")
-      dbg.dprint(1, f"  Synopsis:                 {errdetail['synopsis']}")
-      dbg.dprint(1, f"  Date:                     {errdetail['last_modified_date']}")  
+      dbg.dprint(64, f"  Type:                     {errdetail['type']}")
+      dbg.dprint(64, f"  Synopsis:                 {errdetail['synopsis']}")
+      dbg.dprint(64, f"  Date:                     {errdetail['last_modified_date']}")  
       #print( "  Topic:    {}".format(errdetail['topic']))
-      dbg.dprint(2, f"  -- Packages affected")  
+      dbg.dprint(128, f"  -- Packages affected")  
       for pkgnum in range(0,len(errpkgs)): 
         pkg = errpkgs[pkgnum]
         pkgstring = "".join( [ f"     Id:{pkg['id']:6d}, ", f"N: {pkg['name']:30}, ",
           #f"V: {pkg['version']:7}, ", f"R: {pkg['release']:7}, ", f"File:{pkg['file']}" ])
           f"V: {pkg['version']:7}, ", f"R: {pkg['release']:7}" ])
-        dbg.dprint(2,pkgstring)    
+        dbg.dprint(128,pkgstring)    
       #dbg.dprint(0, "Start Packages affected",errpkgs, "End Packages affected")  
     #dbg.dprint(0, "chunk", chunk)
 
-  dbg.setlvl()
   dbg.leavesub()
   return()
 

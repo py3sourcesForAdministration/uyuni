@@ -56,7 +56,6 @@ def Patches_DeleteManual(*args):
   return
 
 ##############################################################################
-##############################################################################
 def TEST_API(*args):
   """      calls the spacewalk api and prints the answer
   examples: api.getApiNamespaces
@@ -86,7 +85,6 @@ def TEST_API(*args):
   dbg.leavesub()
   return
 
-##############################################################################
 ##############################################################################
 def Actions_Show(*args):
   """       lists actions scheduled in the last num days
@@ -166,7 +164,6 @@ def Actions_Show(*args):
   return
 
 ##############################################################################
-##############################################################################
 def Actions_Archive(*args):
   """       archives actions older than num days.
   """
@@ -220,7 +217,6 @@ def Actions_Archive(*args):
   dbg.leavesub()
   return
 
-##############################################################################
 ##############################################################################
 def Actions_Delete(*args):
   """       deletes archived actions older than num days.
@@ -282,7 +278,6 @@ def Actions_Delete(*args):
   return
 
 ##############################################################################
-##############################################################################
 def Systems_ShowPatches(*args):
   """       Creates a csvfile and also a screenoutput of the
        available patches sorted by systemgroup and patchtype.
@@ -292,11 +287,6 @@ def Systems_ShowPatches(*args):
   #  import os,uyuni_patches
   dbg.entersub()
   dbg.dprint(2,"ARGS",args)
-  #---- Check savefile 
-  #  old = uyuni_patches.check_savefile(data['savefile'])
-  #  if old :
-  #    dbg.dprint(0, "Updating Statefile, please wait")
-  #    UpdateStateFile()
   #---- Settings and params
   ses = data['conn']['ses']
   key = data['conn']['key']
@@ -365,11 +355,12 @@ def Systems_ShowPatches(*args):
   return
 
 ##############################################################################
-##############################################################################
 def Systems_ShowPkgs(*args):
   """       Prints out the upgradable packages of Systems or groups
        Argstring can be a blank separated list of Systems and/or groups
        Default: Without args prints all systems of the default dumpfile
+       -v shows the providing channels, filter with -x channelfilter
+       -vv shows the errata also, filter with -x channelfilter patchfilter 
   """
   from __main__ import dbg,prgargs,data,prgname
   dbg.entersub()
@@ -384,7 +375,7 @@ def Systems_ShowPkgs(*args):
   #print(prgargs.verbose)
   if len(args):
     if "help" in args:
-      print(f"Usage: {prgname} -e {dbg.myself().__name__} [sysorgroup [sysorgroup] ...] [-vv] [-x channelfilter [patchfilter]]") 
+      print(f"Usage: {dbg.myself().__name__} [sysorgroup [sysorgroup] ...] [-vv] [-x channelfilter [patchfilter]]") 
       print(f"{dbg.myself().__doc__}") 
       dbg.leavesub()
       return
@@ -473,7 +464,6 @@ def Systems_ShowPkgs(*args):
   return
       
 ##############################################################################
-##############################################################################
 def Systems_Status(*args):
   """       Prints out the state of Systems
        Argstring can be a blank separated list of Systems and/or groups
@@ -525,7 +515,6 @@ def Systems_Status(*args):
   return
   
 ##############################################################################
-##############################################################################
 def UpdateStateFile(*args):
   """       Gathers needed information for all managed systems,
        their patches and states and saves it first in the
@@ -569,7 +558,6 @@ def UpdateStateFile(*args):
   dbg.leavesub()
   return
 
-##############################################################################
 ##############################################################################
 def Channel_List(*args):
   """       lists channels matching search     
@@ -615,14 +603,14 @@ def Channel_List(*args):
   return(chbylabel)
 
 ##############################################################################
-##############################################################################
 def Channel_01_MergeVendor(*args):
   """       merge vendor channels according to the settings"
        in the server config to the appointed channel.
        if test is given only shows what will be done.
-       Additional Help for commandline channel Management:
        if merge is given merges the errata instead of cloning.
-
+       help -vv shows additional commandline hints
+  """
+  addontext="""
   ------------------- Additional Hints using commandline ----------------------
   A. clone a vendor tree:
     spacecmd -u user -p pwd -s osv9-suse-mgmt.voip.sen -- \\
@@ -647,21 +635,18 @@ def Channel_01_MergeVendor(*args):
   chmap  = data['chmap']['01_vendorclone']
   chlist = data['sumastate']['channels']
   t  = False
-  p  = False
   cl = True
   if len(args) > 0:
     if "help" in args:
-      print(f"Usage: {dbg.myself().__name__} [test] [verbose] [merge]") 
+      print(f"Usage: {dbg.myself().__name__} [test] [merge] [-v]") 
       print(f"{dbg.myself().__doc__}") 
-      dbg.dprint(192,"current config from data.chmap.01_vendorclone",data['chmap']['01_vendorclone'],"End data['chmap']['01_vendorclone']")
+      dbg.dprint(64,"current config from data.chmap.01_vendorclone",data['chmap']['01_vendorclone'],"End data['chmap']['01_vendorclone']")
+      dbg.dprint(128,addontext)
       print("")
       dbg.leavesub()
       return
     if "test" in args:
       t = True
-      p = True
-    if "verbose" in args:
-      p = True
     if "merge" in args:
       cl = False
 
@@ -669,7 +654,7 @@ def Channel_01_MergeVendor(*args):
   modlog.info(f"----> {dbg.myself().__name__}")
   for (source,target,parent) in chmap:
     modlog.info(f"{source} -> {target}")
-    ok = uyuni_channels.Merge_Channel(source,target,parent,test=t,verbose=p,clone=cl)
+    ok = uyuni_channels.Merge_Channel(source,target,parent,test=t,clone=cl)
     if not ok:
       dbg.dprint(256,F"MergeVendor to {target} did not succeed")
       modlog.error(F"MergeVendor to {target} did not succeed")
@@ -677,7 +662,6 @@ def Channel_01_MergeVendor(*args):
   dbg.leavesub()
   return
 
-##############################################################################
 ##############################################################################
 def Channel_02_UpdateArchive(*args):
   """       create or update archive channels according to the settings
@@ -698,23 +682,20 @@ def Channel_02_UpdateArchive(*args):
   ###### Check args and do it ################################################
   if len(args) > 0:
     if "help" in args:
-      print(f"Usage: {dbg.myself().__name__} [test] [verbose]") 
+      print(f"Usage: {dbg.myself().__name__} [test] [-v]") 
       print(f"{dbg.myself().__doc__}") 
-      dbg.dprint(192,"current config from data.chmap.02_datefreeze",chmap,"End data['chmap']['02_datefreeze']")
+      dbg.dprint(64,"current config from data.chmap.02_datefreeze",chmap,"End data['chmap']['02_datefreeze']")
       print("")
       dbg.leavesub()
       return
     elif "test" in args:
       testonly = 1
-    elif "verbose" in args:
-      printout = 1
     else:
       pass
   modlog.info(f"----> {dbg.myself().__name__}")
   for (source,target,parent) in chmap:
     modlog.info(f"{source} -> {target}")
-    ok = uyuni_channels.Merge_Channel(source,target,parent,
-                                      test=testonly,verbose=printout,clone=clone)
+    ok = uyuni_channels.Merge_Channel(source,target,parent,test=testonly,clone=clone)
     if not ok:
       dbg.dprint(256,F"ArchiveUpdate to {target} did not succeed")
       modlog.error( F"ArchiveUpdate to {target} did not succeed" )
@@ -722,7 +703,6 @@ def Channel_02_UpdateArchive(*args):
   dbg.leavesub()
   return
 
-##############################################################################
 ##############################################################################
 def Channel_02_applyExcludes(*args):
   """       Apply the Content Exclude settings in the server configuration file
@@ -893,12 +873,10 @@ def Channel_02_applyExcludes(*args):
   return
 
 ##############################################################################
-##############################################################################
 def Channel_03_MergeArchive(*args):
   """       merge the latest archive channel into the test channel.
-       See server config data['chmap']['Channel_04_MergeArchive']
+       See server config data['chmap']['03_arcmerge']
        if test is given only shows what will be done.
-     
   """
   from __main__ import dbg,prgargs,data,modlog
   dbg.entersub()
@@ -906,25 +884,22 @@ def Channel_03_MergeArchive(*args):
   ses = data['conn']['ses']
   key = data['conn']['key']
   clone    = False
-  verbose  = False
   testonly = False
   if len(args) > 0:
     if "help" in args: 
-      print(f"Usage: {dbg.myself().__name__} [test] [verbose]") 
+      print(f"Usage: {dbg.myself().__name__} [test] [-v]") 
       print(f"{dbg.myself().__doc__}") 
       dbg.leavesub()
       return
     if "test" in args:
       testonly = True
-    if "verbose" in args:
-      verbose = True
 
   chmap = data['chmap']['03_arcmerge']
   modlog.info(f"----> {dbg.myself().__name__}")
   for (source,target,parent) in chmap:
     modlog.info(f"{source} -> {target}")
     ok = uyuni_channels.Merge_Channel(source,target,parent,
-                                      test=testonly,verbose=verbose,clone=clone)
+                                      test=testonly,clone=clone)
     if not ok:
       line = F"Merging {source} to {target} did not succeed"
       dbg.dprint(256,line)
@@ -934,12 +909,12 @@ def Channel_03_MergeArchive(*args):
   return
 
 ##############################################################################
-##############################################################################
 def Channel_ShowPkgDiff(*args):
   """       Show the package difference between source and target channel. 
        To avoid problems the channel containing more pkgs should be the 
        first param <source>. To be able to compare original and cloned 
        channels a leading CL- is cut off in both channels.
+       -v adds verbosity.
   """
   from __main__ import dbg,prgargs,data
   dbg.entersub()
@@ -947,18 +922,13 @@ def Channel_ShowPkgDiff(*args):
   ses = data['conn']['ses']
   key = data['conn']['key']
 
-  verb = 0
   rest = []
   for i in range(0,len(args)):
     if args[i] == "help":
-      print(f"Usage: {dbg.myself().__name__} <SourceChannel> <TargetChannel> [v[v]]") 
+      print(f"Usage: {dbg.myself().__name__} <SourceChannel> <TargetChannel> [-v[v]]") 
       print(f"{dbg.myself().__doc__}") 
       dbg.leavesub()
       return
-    elif args[i] == "v":
-      verb = 1
-    elif args[i] == "vv":
-      verb = 3
     else:
       if re.match('\w+',args[i]):
         if (len(rest) <=2):
@@ -968,7 +938,7 @@ def Channel_ShowPkgDiff(*args):
     source, target = rest
     print(f"Source: {source}")
     print(f"Target: {target}")
-    uyuni_channels.get_pkg_difference(source,target,verbose=verb)
+    uyuni_channels.get_pkg_difference(source,target)
   else:
     dbg.dprint(0,"not enough Arguments")
         
@@ -976,12 +946,12 @@ def Channel_ShowPkgDiff(*args):
   return
   
 ##############################################################################
-##############################################################################
 def Channel_ShowPatchDiff(*args):
   """       Show the errata difference between source and target channel. 
        To avoid problems the channel containing more errata should be the 
        first param <source>. To be able to compare original and cloned 
        channels the leading CL- is cut off in both channels.
+       -v adds verbosity. 
   """
   from __main__ import dbg,prgargs,data,prgname
   dbg.entersub()
@@ -989,11 +959,10 @@ def Channel_ShowPatchDiff(*args):
   ses = data['conn']['ses']
   key = data['conn']['key']
 
-  verb = 0
   rest = []
   for i in range(0,len(args)):
     if args[i] == "help":
-      print(f"Usage: {prgname} -e {dbg.myself().__name__} <SourceChannel> <TargetChannel> [-v[v]]") 
+      print(f"Usage: {dbg.myself().__name__} <SourceChannel> <TargetChannel> [-v[v]]") 
       print(f"{dbg.myself().__doc__}") 
       dbg.leavesub()
       return
@@ -1002,16 +971,11 @@ def Channel_ShowPatchDiff(*args):
         if (len(rest) <=2):
           rest.append(args[i])
 
-  if prgargs.verbose == 2:
-    verb = 3
-  if prgargs.verbose == 1:
-    verb = 1
-
   if len(rest) == 2:
     source, target = rest
     print(f"Source: {source}")
     print(f"Target: {target}")
-    uyuni_patches.get_patch_difference(source,target,verbose=verb)
+    uyuni_patches.get_patch_difference(source,target)
   else:
     dbg.dprint(0,"not enough Arguments")
         
