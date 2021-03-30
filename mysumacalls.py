@@ -13,10 +13,12 @@ except:
   if sys.argv[0].find('pydoc'):
     pass # we are running from pydoc3
 ##### Module Start
-def Systems_ShowPkgs_N(*args): 
-  sys.path.append('/home/ap/pydev/uyuni/testprogs')
-  import test_Systems_ShowPkgs 
-  test_Systems_ShowPkgs.Systems_ShowPkgs_new(*args)
+###----- Sample how to test a new function
+###----- create new function name, import file from testprogs, call testprog function
+#def Systems_ShowPkgs_N(*args): 
+#  sys.path.append('/home/ap/pydev/uyuni/testprogs')
+#  import test_Systems_ShowPkgs 
+#  test_Systems_ShowPkgs.Systems_ShowPkgs_new(*args)
 
 ################################################################
 def Patches_DeleteManual(*args):
