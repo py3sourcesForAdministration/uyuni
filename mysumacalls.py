@@ -13,6 +13,10 @@ except:
   if sys.argv[0].find('pydoc'):
     pass # we are running from pydoc3
 ##### Module Start
+def Systems_ShowPkgs_N(*args): 
+  sys.path.append('/home/ap/pydev/uyuni/testprogs')
+  import test_Systems_ShowPkgs 
+  test_Systems_ShowPkgs.Systems_ShowPkgs_new(*args)
 
 ################################################################
 def Patches_DeleteManual(*args):
@@ -359,6 +363,9 @@ def Systems_ShowPkgs(*args):
   """       Prints out the upgradable packages of Systems or groups
        Argstring can be a blank separated list of Systems and/or groups
        Default: Without args prints all systems of the default dumpfile
+       extraargs: 
+         -x channelfilter  -- print only if any providing channel matches filter
+         -x cf patchfilter -- print only if channel and errata filter match
        -v shows the providing channels, filter with -x channelfilter
        -vv shows the errata also, filter with -x channelfilter patchfilter 
   """
@@ -403,7 +410,7 @@ def Systems_ShowPkgs(*args):
   else:
     pass
 
-  dbg.setlvl(+2)
+  dbg.setlvl(+1)
   for system in sorted(sysorgroup):
     curid = syslist[system]['id']
     dbg.dprint(0,f"{system:35}",", ID:",curid)
@@ -415,49 +422,53 @@ def Systems_ShowPkgs(*args):
     except:
       dbg.dprint(0, "Call listLatestUpgradablePackages did not succeed for system")
       continue
-    #if len(pkgs):
     for pkg in pkgs:
-      pblock = [] ; printout = 1
       pkgnum = pkg['to_package_id']
-      pblock.append(f"{pkgnum:8}, {pkg['name']:35} {pkg['from_version']:8}- {pkg['from_release']:8} -> {pkg['to_version']:8}- {pkg['to_release']:8}")
-      if prgargs.verbose:
-        channlp = []
-        erratap = []
-        cmatch = 0 ; pmatch = 0 ; 
-        if not providers.get(pkgnum):
-          try:
-            channlp = ses.packages.listProvidingChannels(key,pkgnum)
-            erratap = ses.packages.listProvidingErrata(key,pkgnum)
-          except:
-            dbg.dprint(0, "call for providers did not succeed")
-            continue
-          for c in channlp:
-            label = c['label']
-            providers[pkgnum].channels[label] = providers[pkgnum].channels.get(label,1)
-          for e in erratap:
-            advisory = e['advisory'].replace('CL-','',1)
-            providers[pkgnum].errata[advisory] = providers[pkgnum].errata.get(advisory,e['synopsis'])
-        ### end of information aquirement for a new pkg
-        ### Fill block with matching labels and errata     
-        for label in providers[pkgnum].channels.keys():
-          if channelmatch in label:
-            cmatch = 1
-            pblock.append(f"         Channel: {label}")
-        if prgargs.verbose > 1:
-          for adv in providers[pkgnum].errata.keys():
-            if patchmatch in adv:
-              pmatch = 1
-              pblock.append(f"         Errata: {adv} Syn: {providers[pkgnum].errata[adv]}")
-        ### in case of verbose check if this pblock should be printed      
-        if not cmatch:
-          printout = 0 
-        if prgargs.verbose > 1 and len(prgargs.xargs) > 1 and pmatch == 0:
-          printout = 0  
-      ### This is for all pkgs        
-      if printout:
-        #dbg.dprint(2,'-----------------')
-        for line in pblock:   
-          dbg.dprint(2,line)
+      pkgline = f"{pkgnum:8}, {pkg['name']:35} {pkg['from_version']:8}- {pkg['from_release']:8} -> {pkg['to_version']:8}- {pkg['to_release']:8}"
+      channlp = [] ; cblock = []
+      erratap = [] ; eblock = []
+      if not providers.get(pkgnum):
+        try:
+          channlp = ses.packages.listProvidingChannels(key,pkgnum)
+          erratap = ses.packages.listProvidingErrata(key,pkgnum)
+        except:
+          dbg.dprint(0, "call for providers did not succeed")
+          continue
+        for c in channlp:
+          label = c['label']
+          providers[pkgnum].channels[label] = providers[pkgnum].channels.get(label,1)
+        for e in erratap:
+          advisory = e['advisory'].replace('CL-','',1)
+          providers[pkgnum].errata[advisory] = providers[pkgnum].errata.get(advisory,e['synopsis'])
+      ### end of information aquirement for a new pkg
+      ### Start Printing
+      pmatch = 0 ; cmatch = 0
+      for label in providers[pkgnum].channels.keys():
+        if len(prgargs.xargs) == 0:
+          cmatch = 1
+          cblock.append(f"         Channel: {label}")
+        elif len(prgargs.xargs) and channelmatch in label:
+          cmatch = 1
+          cblock.append(f"         Channel: {label}")
+       
+      for adv in providers[pkgnum].errata.keys():
+        if len(prgargs.xargs) < 2:
+          pmatch = 1  
+          eblock.append(f"         Errata: {adv} Syn: {providers[pkgnum].errata[adv]}") 
+        elif len(prgargs.xargs) >1 and patchmatch in adv:
+          pmatch = 1
+          eblock.append(f"         Errata: {adv} Syn: {providers[pkgnum].errata[adv]}") 
+
+      ### allow print if pmatch is 0, because pkg is just an update
+      if len(providers[pkgnum].errata.keys()) == 0 and len(prgargs.xargs) < 2:
+        pmatch = 1          
+      ### Print pkginfo 
+      if cmatch and pmatch:
+        dbg.dprint(1,  pkgline)
+        for l in cblock:
+          dbg.dprint(64,  l)
+        for l in eblock:
+          dbg.dprint(128, l)
 
   dbg.setlvl()
   dbg.leavesub()
