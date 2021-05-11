@@ -1,0 +1,49 @@
+------------------------------------------
+--- 1. Prepare the wrapper and libraries
+------------------------------------------
+--- Create a directory to contain python sources. For example ~/pysrc.
+$ mkdir ~/pysrc
+--- Chdir to the new directory 
+$ cd ~/pysrc
+--- checkout pylipap first and 
+--- prepare the wrapper program from pylibap
+$ git clone https://github.com/py3sourcesForAdministration/pylibap.git 
+--- if you have a writable bin directory which is in your path go there
+--- usually this is ~/bin
+$ cd ~/bin
+$ ln -s ../pysrc/pylibap/pywrap.py pywrapper
+--- Now create a link to the basename of the wanted program.py
+$ ln -s pywrapper uyu
+
+------------------------------------------
+--- 2. Clone this program
+------------------------------------------
+--- chdir again to the source directory and clone this project
+$ cd ~/pysrc
+$ git clone https://github.com/py3sourcesForAdministration/uyuni.git 
+
+------------------------------------------
+--- 3. Configure this program
+------------------------------------------
+$ cd ~pysrc/uyuni
+--- Create your private configuration, must start with SRV- 
+$ cp SRV.example.cfg SRV-myconf.cfg
+$ ln -s SRV-myconf.cfg SRV-default.cfg
+--- you can now either change the settings in SRV-myconf.cfg to
+--- reflect your needs or check whether everything is ok 
+--- If you got all modules for python
+--- See uyu_imp.py which modules are needed you can run
+--- uyu via the wrapper.
+--- Lets check with
+$ uyu -h 
+--- you should see the help messages and 
+$ uyu -l
+--- which should show the available modules
+
+
+------------------------------------------
+------------------------------------------
+------------------------------------------
+All configuration is done in  SRV-myconf.cfg. Read the documention
+provided in this file to adopt to your environment.
+
